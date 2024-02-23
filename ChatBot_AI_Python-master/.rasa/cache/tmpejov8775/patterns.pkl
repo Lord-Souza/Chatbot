@@ -1,0 +1,6 @@
+[
+  {
+    "name": "nmMedico",
+    "pattern": "(\\bWilliams\\ Fernandes\\ Barra\\b|\\bSâmio\\ Pimentel\\ Ferreira\\b|\\bEwaldo\\ Luzio\\ Foro\\ de\\ Oliveira\\b)"
+  }
+]

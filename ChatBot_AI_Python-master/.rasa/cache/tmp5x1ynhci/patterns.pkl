@@ -1,0 +1,46 @@
+[
+  {
+    "name": "dia (\\d{1,2}) (jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez) (\\d{4})",
+    "pattern": "Atendimentos do dia 15 dez 2023"
+  },
+  {
+    "name": "dia (\\d{1,2}) (jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez) (\\d{4})",
+    "pattern": "Quais os atendimentos do dia 22 jan 2024?"
+  },
+  {
+    "name": "dia (\\d{1,2}) de (janeiro|fevereiro|março|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro) de (\\d{4})",
+    "pattern": "Atendimentos do dia 15 de dezembro de 2023"
+  },
+  {
+    "name": "dia (\\d{1,2}) de (janeiro|fevereiro|março|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro) de (\\d{4})",
+    "pattern": "Quais os atendimentos do dia 22 de janeiro de 2024?"
+  },
+  {
+    "name": "dia (\\d{1,2})-(\\d{1,2})-(\\d{4})",
+    "pattern": "Atendimentos do dia 15-12-2023"
+  },
+  {
+    "name": "dia (\\d{1,2})-(\\d{1,2})-(\\d{4})",
+    "pattern": "Quais os atendimentos do dia 22-01-2024?"
+  },
+  {
+    "name": "dia (\\d{1,2})/(\\d{1,2})/(\\d{4})",
+    "pattern": "Atendimentos do dia 15/12/2023"
+  },
+  {
+    "name": "dia (\\d{1,2})/(\\d{1,2})/(\\d{4})",
+    "pattern": "Quais os atendimentos do dia 22/01/2024?"
+  },
+  {
+    "name": "dia (\\d{4})-(\\d{1,2})-(\\d{1,2})",
+    "pattern": "Atendimentos do dia 2023-12-15"
+  },
+  {
+    "name": "dia (\\d{4})-(\\d{1,2})-(\\d{1,2})",
+    "pattern": "Quais os atendimentos do dia 2024-01-22?"
+  },
+  {
+    "name": "nmMedico",
+    "pattern": "(\\bWilliams\\ Fernandes\\ Barra\\b|\\bSâmio\\ Pimentel\\ Ferreira\\b|\\bEwaldo\\ Luzio\\ Foro\\ de\\ Oliveira\\b)"
+  }
+]

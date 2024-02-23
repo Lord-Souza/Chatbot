@@ -1,0 +1,36 @@
+[
+  {
+    "tag_name": "entity",
+    "ids_to_tags": {
+      "1": "B-dsConvenio",
+      "2": "I-dsConvenio",
+      "3": "L-dsConvenio",
+      "4": "U-dsConvenio",
+      "5": "B-dtEntrada",
+      "6": "I-dtEntrada",
+      "7": "L-dtEntrada",
+      "8": "U-dtEntrada",
+      "9": "B-nmMedico",
+      "10": "I-nmMedico",
+      "11": "L-nmMedico",
+      "12": "U-nmMedico",
+      "0": "O"
+    },
+    "tags_to_ids": {
+      "B-dsConvenio": 1,
+      "I-dsConvenio": 2,
+      "L-dsConvenio": 3,
+      "U-dsConvenio": 4,
+      "B-dtEntrada": 5,
+      "I-dtEntrada": 6,
+      "L-dtEntrada": 7,
+      "U-dtEntrada": 8,
+      "B-nmMedico": 9,
+      "I-nmMedico": 10,
+      "L-nmMedico": 11,
+      "U-nmMedico": 12,
+      "O": 0
+    },
+    "num_tags": 13
+  }
+]

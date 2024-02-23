@@ -1,0 +1,135 @@
+version: "3.1"
+nlu:
+  - intent: informacoes_atendimento
+    examples: |
+      - Quais são as informações do atendimento de número [16801](nrAtendimento)?
+      - Me dê detalhes sobre o atendimento de hoje.
+      - O que você sabe sobre os atendimentos da [Unimed Belém](dsConvenio)?
+      - Mostre os atendimentos de hoje do convênio [](dsConvenio)
+      - Quais os atendimentos do dia [22/01/24](dtEntrada)?
+      - Quais os atendimentos do dia [22-01-24](dtEntrada)?
+      - Quais os atendimentos do dia [24-01-22](dtEntrada)?
+      - Quais os atendimentos do dia [22 de janeiro de 24](dtEntrada)?
+      - Quais os atendimentos do dia [22 jan 24](dtEntrada)?
+      - Quantos atendimentos aconteceram entre os dias [] e [](dtEntrada)?
+      - Quantas consultas aconteceram hoje?
+      - Quantas consultas aconteceram essa semana?
+      - Quantas quimioterapias aconteceram hoje?
+      - Quantas quimioterapias aconteceram essa semana?
+      - Quais as clinicas foram atendidas essa semana?
+      - Quais as clinicas foram atendidas hoje?
+
+
+  - intent: quantidade_atendimentos
+    examples: |
+      - Quantos atendimentos tivemos esta semana?
+      - Diga-me a quantidade de atendimentos no último mês.
+      - Qual é o total de atendimentos registrados?
+      - Quantos atendimentos aconteceram hoje?
+      - Mostre os atendimentos de hoje.
+
+  - intent: medico_atendimentos
+    examples: |
+      - Quais são os atendimentos do Dr. [Williams Fernandes Barra](nmMedico)?
+      - Quais são os atendimentos do Dr. [williams](nmMedico)?
+      - Quais são os atendimentos da Dra. [Silvana de Nazaré Pontes da Costa](nmMedico)?
+      - Me mostre os atendimentos do Dr. [Sâmio Pimentel Ferreira](nmMedico).
+      - Quantos atendimentos o Dr. [Ewaldo Luzio Foro de Oliveira](nmMedico) realizou?
+      
+
+  - lookup: nmMedico
+    examples: |
+      - Williams Fernandes Barra
+      - Sâmio Pimentel Ferreira
+      - Ewaldo Luzio Foro de Oliveira
+      - Silvana de Nazaré Pontes da Costa
+
+  - intent: greet
+    examples: |
+      - oi
+      - olá
+      - eai
+      - beleza?
+      - olá, como vai?
+      - bom dia
+      - boa tarde
+      - moin
+      - oi, como vai?
+      - vamos lá
+      - ei, cara
+      - bom dia
+      - eai mano
+      - boa noite
+      - olá, bom dia
+
+  - intent: goodbye
+    examples: |
+      - tchau
+      - adeus
+      - até logo
+      - tchau
+      - adeus
+      - tenha um bom dia
+      - até mais
+      - tchau
+      - até logo
+
+  - intent: affirm
+    examples: |
+      - sim
+      - correto
+      - com certeza
+      - claro
+      - isso parece bom
+      - correto
+
+  - intent: deny
+    examples: |
+      - não
+      - jamais!
+      - nunca
+      - eu acho que não
+      - não gosto disso
+      - de jeito nenhum
+      - não realmente
+
+  - intent: mood_great
+    examples: |
+      - perfeito
+      - ótimo
+      - incrível
+      - me sentindo como um rei
+      - maravilhoso
+      - estou me sentindo muito bem
+      - estou ótimo
+      - estou incrível
+      - vou salvar o mundo
+      - super animado
+      - extremamente bom
+      - tão perfeito
+      - tão bom
+      - tão perfeito
+
+  - intent: mood_unhappy
+    examples: |
+      - meu dia foi horrível
+      - estou triste
+      - não me sinto muito bem
+      - estou decepcionado
+      - super triste
+      - estou tão triste
+      - triste
+      - muito triste
+      - infeliz
+      - não bom
+      - não muito bom
+      - extremamente triste
+      - tão triste
+      - tão triste
+
+  - intent: bot_challenge
+    examples: |
+      - você é um bot?
+      - você é um humano?
+      - estou falando com um bot?
+      - estou falando com um humano?

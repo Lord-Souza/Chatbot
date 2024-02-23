@@ -1,0 +1,12 @@
+version: "3.1"
+
+rules:
+  - rule: Dizer adeus sempre que o usuário se despedir
+    steps:
+      - intent: goodbye
+      - action: utter_goodbye
+
+  - rule: Dizer 'Eu sou um bot' sempre que o usuário desafiar
+    steps:
+      - intent: bot_challenge
+      - action: utter_iamabot

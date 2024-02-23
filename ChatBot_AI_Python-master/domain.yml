@@ -1,0 +1,53 @@
+version: "3.1"
+
+intents:
+  - greet
+  - goodbye
+  - affirm
+  - deny
+  - mood_great
+  - mood_unhappy
+  - bot_challenge
+  - informacoes_atendimento
+  - quantidade_atendimentos
+  - medico_atendimentos
+
+entities:
+  - atendimento_paciente
+  - nrAtendimento
+  - nmMedico
+  - dtEntrada
+  - dsConvenio
+
+actions:
+  - action_get_atendimentos
+
+responses:
+  utter_greet:
+    - text: "Oi! Como você está?"
+    - text: "Olá, como posso ajudar?"
+
+  utter_cheer_up:
+    - text: "Aqui está algo para alegrar você:"
+      image: "https://i.imgur.com/nGF1K8f.jpg"
+
+  utter_did_that_help:
+    - text: "Isso ajudou você?"
+
+  utter_happy:
+    - text: "Ótimo, continue assim!"
+
+  utter_goodbye:
+    - text: "Tchau"
+    - text: "Até a próxima!"
+    - text: "Até mais!"
+    - text: "Espero ter ajudado! até mais :)"
+
+  utter_iamabot:
+    - text: "Eu sou um bot, criado pela KnowBI."
+    - text: "Eu sou um assistente virtual, como posso ajudar?"
+    - text: "Eu sou uma IA pronta para lhe ajudar :)"
+
+session_config:
+  session_expiration_time: 60
+  carry_over_slots_to_new_session: true
