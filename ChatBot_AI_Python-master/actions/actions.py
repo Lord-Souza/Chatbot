@@ -35,6 +35,7 @@ class ActionGetAtendimentos(Action):
                         for atendimento in atendimentos_dia:
                             formatted_info = self._formatar_atendimento(atendimento)
                             dispatcher.utter_message(formatted_info)
+                        dispatcher.utter_message(f"Total de atendimentos do dia {data_referencia_formatada}: {len(atendimentos_dia)}")
                     else:
                         dispatcher.utter_message(f"Atendimentos do dia {data_referencia_formatada} não encontrados.")
 
@@ -54,7 +55,6 @@ class ActionGetAtendimentos(Action):
                 else:
                     entities = tracker.latest_message.get('entities')
                     if entities:
-                        medicos = {}
                         for entity in entities:
                             if entity['entity'] == 'nmMedico':
                                 nome_medico = entity['value']
@@ -70,6 +70,17 @@ class ActionGetAtendimentos(Action):
                             elif entity['entity'] == 'data':
                                 # A busca por data já foi implementada acima
                                 pass
+                            elif entity['entity'] == 'nmPaciente':
+                                nome_paciente = entity['value']
+                                atendimentos_paciente = [atendimento for atendimento in atendimentos if atendimento.get("nmPaciente") == nome_paciente]
+                                if atendimentos_paciente:
+                                    numeros_atendimentos = len(atendimentos_paciente)
+                                    dispatcher.utter_message(f"Total de atendimentos do Paciente {nome_paciente}: {numeros_atendimentos}")
+                                    for atendimento in atendimentos_paciente:
+                                        formatted_info = self._formatar_atendimento(atendimento)
+                                        dispatcher.utter_message(formatted_info)
+                                else:
+                                    dispatcher.utter_message(f"Atendimentos do Paciente {nome_paciente} não encontrados.")
                             # Adicione aqui outras condições para outras entidades, se necessário
                     
                     elif 'quantos atendimentos' in message_text and 'esta semana' in message_text:
@@ -84,8 +95,7 @@ class ActionGetAtendimentos(Action):
                         total_atendimentos = len(atendimentos)
                         dispatcher.utter_message(f"Total de atendimentos: {total_atendimentos}")
                     else:
-                        dispatcher.utter_message("Por favor, forneça o número do atendimento, o nome do médico ou a data de referência.")
-
+                        dispatcher.utter_message("Por favor, forneça o número do atendimento, o nome do médico, do paciente ou a data de referência.")
         except requests.exceptions.RequestException as e:
             dispatcher.utter_message("Ocorreu um erro ao obter os dados da API.")
         except Exception as e:
@@ -94,7 +104,7 @@ class ActionGetAtendimentos(Action):
         return []
 
     def _formatar_atendimento(self, atendimento: Dict[str, Any]) -> str:
-        formatted_info = "\n".join([f"Número do Atendimento: {atendimento['nrAtendimento']}, Médico: {atendimento['nmMedico']}, Data de Entrada: {atendimento['dtEntrada']}, Convênio: {atendimento['dsConvenio']}"])
+        formatted_info = "\n".join([f"Número do Atendimento: {atendimento['nrAtendimento']}, Médico: {atendimento['nmMedico']}, Paciente: {atendimento['nmPaciente']}, Data de Entrada: {atendimento['dtEntrada']}, Convênio: {atendimento['dsConvenio']}"])
         return formatted_info
 
     def _formatar_data(self, data: str) -> str:
