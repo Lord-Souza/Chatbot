@@ -31,11 +31,10 @@ class ActionGetAtendimentos(Action):
                     atendimentos_dia = [atendimento for atendimento in atendimentos if self._comparar_datas(atendimento.get("dtEntrada"), data_referencia_formatada)]
 
                     if atendimentos_dia:
-                        dispatcher.utter_message(f"Atendimentos do dia {data_referencia_formatada}:")
+                        dispatcher.utter_message(f"Atendimentos do dia {data_referencia_formatada}: {len(atendimentos_dia)}\n")
                         for atendimento in atendimentos_dia:
                             formatted_info = self._formatar_atendimento(atendimento)
                             dispatcher.utter_message(formatted_info)
-                        dispatcher.utter_message(f"Total de atendimentos do dia {data_referencia_formatada}: {len(atendimentos_dia)}")
                     else:
                         dispatcher.utter_message(f"Atendimentos do dia {data_referencia_formatada} não encontrados.")
 
@@ -81,6 +80,17 @@ class ActionGetAtendimentos(Action):
                                         dispatcher.utter_message(formatted_info)
                                 else:
                                     dispatcher.utter_message(f"Atendimentos do Paciente {nome_paciente} não encontrados.")
+                            elif entity['entity'] == 'dsClinica':
+                                nome_clinica = entity['value']
+                                atendimentos_clinica = [atendimento for atendimento in atendimentos if atendimento.get("dsClinica") == nome_clinica]
+                                if atendimentos_clinica:
+                                    numeros_atendimentos = len(atendimentos_clinica)
+                                    dispatcher.utter_message(f"Total de atendimentos na Clínica {nome_clinica}: {numeros_atendimentos}")
+                                    for atendimento in atendimentos_clinica:
+                                        formatted_info = self._formatar_atendimento(atendimento)
+                                        dispatcher.utter_message(formatted_info + '\n')
+                                else:
+                                    dispatcher.utter_message(f"Atendimentos na Clínica {nome_clinica} não encontrados.")
                             # Adicione aqui outras condições para outras entidades, se necessário
                     
                     elif 'quantos atendimentos' in message_text and 'esta semana' in message_text:
@@ -95,7 +105,7 @@ class ActionGetAtendimentos(Action):
                         total_atendimentos = len(atendimentos)
                         dispatcher.utter_message(f"Total de atendimentos: {total_atendimentos}")
                     else:
-                        dispatcher.utter_message("Por favor, forneça o número do atendimento, o nome do médico, do paciente ou a data de referência.")
+                        dispatcher.utter_message("Por favor, forneça o número do atendimento, o nome do médico, do paciente, da clínica ou a data de referência.")
         except requests.exceptions.RequestException as e:
             dispatcher.utter_message("Ocorreu um erro ao obter os dados da API.")
         except Exception as e:
@@ -104,7 +114,14 @@ class ActionGetAtendimentos(Action):
         return []
 
     def _formatar_atendimento(self, atendimento: Dict[str, Any]) -> str:
-        formatted_info = "\n".join([f"Número do Atendimento: {atendimento['nrAtendimento']}, Médico: {atendimento['nmMedico']}, Paciente: {atendimento['nmPaciente']}, Data de Entrada: {atendimento['dtEntrada']}, Convênio: {atendimento['dsConvenio']}"])
+        formatted_info = "\n".join([
+            f"Nº do Atendimento: {atendimento['nrAtendimento']}",
+            f"Médico: {atendimento['nmMedico']}",
+            f"Paciente: {atendimento['nmPaciente']}",
+            f"Data de Entrada: {atendimento['dtEntrada']}",
+            f"Convênio: {atendimento['dsConvenio']}",
+            f"Clínica: {atendimento['dsClinica']}"
+        ])
         return formatted_info
 
     def _formatar_data(self, data: str) -> str:
