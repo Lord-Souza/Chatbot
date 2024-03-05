@@ -5,7 +5,10 @@ nlu:
       - Quais são as informações do atendimento de número [16801](nrAtendimento)?
       - Me dê detalhes sobre o atendimento de hoje.
       - O que você sabe sobre os atendimentos da [Unimed Belém](dsConvenio)?
-      - Mostre os atendimentos de hoje do convênio [](dsConvenio)
+      - Mostre os atendimentos do [CASF](dsConvenio)
+      - Mostre os atendimentos do [Particular](dsConvenio)
+      - Mostre os atendimentos de hoje do convênio [CASSI](dsConvenio)
+      - Quantos atendimentos da [](dsConvenio) tivemos hoje?
       - Quais os atendimentos do dia [22/01/24](dtEntrada)?
       - Quais os atendimentos do dia [22-01-24](dtEntrada)?
       - Quais os atendimentos do dia [24-01-22](dtEntrada)?

@@ -19,6 +19,14 @@ entities:
   - dtEntrada
   - dsConvenio
 
+slots:
+  convenio:
+    type: text
+    influence_conversation: true
+    mappings:
+      - type: from_entity
+        entity: dsConvenio
+
 actions:
   - action_get_atendimentos
 
