@@ -56,13 +56,11 @@ nlu:
       - olá, como vai?
       - bom dia
       - boa tarde
-      - moin
+      - boa noite
       - oi, como vai?
       - vamos lá
       - ei, cara
-      - bom dia
-      - eai mano
-      - boa noite
+      - eai mano 
       - olá, bom dia
 
   - intent: goodbye

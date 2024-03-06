@@ -26,144 +26,112 @@ class ActionGetAtendimentos(Action):
 
             # Identificar o convênio na mensagem do usuário usando expressão regular
             message_text = tracker.latest_message.get('text')
-            convenio_intervalo_datas = re.search(r'Mostre os atendimentos do (.+) entre (\d{1,2}[/-]\d{1,2}[/-]\d{2,4}) e (\d{1,2}[/-]\d{1,2}[/-]\d{2,4})', message_text)
+            convenio_match = re.search(r'Mostre os atendimentos do (.+)', message_text)
 
-            if convenio_intervalo_datas:
-                convenio = convenio_intervalo_datas.group(1).lower()
-                data_inicial = convenio_intervalo_datas.group(2)
-                data_final = convenio_intervalo_datas.group(3)
-
-                # Formatando as datas de referência
-                data_inicial_formatada = self._formatar_data(data_inicial)
-                data_final_formatada = self._formatar_data(data_final)
-
-                # Filtrar os atendimentos pelo convênio e intervalo de datas especificados
-                atendimentos_filtrados = [atendimento for atendimento in atendimentos if convenio in atendimento.get("dsConvenio").lower() and self._comparar_datas_intervalo(atendimento.get("dtEntrada"), data_inicial_formatada, data_final_formatada)]
-
-                if atendimentos_filtrados:
-                    dispatcher.utter_message(f"Atendimentos do convênio '{convenio}' entre {data_inicial_formatada} e {data_final_formatada}: {len(atendimentos_filtrados)}\n")
-                    for atendimento in atendimentos_filtrados:
-                        formatted_info = self._formatar_atendimento(atendimento)
-                        dispatcher.utter_message(formatted_info)
-                else:
-                    dispatcher.utter_message(f"Atendimentos do convênio '{convenio}' entre {data_inicial_formatada} e {data_final_formatada} não encontrados.")
-                return [ChatResponse(message=dispatcher.messages, action="action_get_atendimentos", entities={})]
-
-            # Identificar o convênio na mensagem do usuário usando expressão regular
-            convenio_especifico = re.search(r'Mostre os atendimentos do (.+)', message_text)
-
-            if convenio_especifico:
-                convenio = convenio_especifico.group(1).lower()
-
-                # Filtrar os atendimentos pelo convênio especificado
-                atendimentos_convenio = [atendimento for atendimento in atendimentos if convenio in atendimento.get("dsConvenio").lower()]
-
-                if atendimentos_convenio:
-                    dispatcher.utter_message(f"Atendimentos do convênio '{convenio}': {len(atendimentos_convenio)}\n")
-                    for atendimento in atendimentos_convenio:
-                        formatted_info = self._formatar_atendimento(atendimento)
-                        dispatcher.utter_message(formatted_info)
-                else:
-                    dispatcher.utter_message(f"Atendimentos do convênio '{convenio}' não encontrados.")
-                return [ChatResponse(message=dispatcher.messages, action="action_get_atendimentos", entities={})]
+            if convenio_match:
+                convenio = convenio_match.group(1).lower()
+                dispatcher.utter_message("De quais dias?")
+                return [SlotSet("convenio", convenio)]
 
             # Identificar datas na mensagem do usuário usando expressão regular
             datas_encontradas = re.findall(r'\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b', message_text)
 
             if datas_encontradas:
-                for data in datas_encontradas:
-                    # Formatando a data de referência
-                    data_referencia_formatada = self._formatar_data(data)
+                data_inicio, data_fim = datas_encontradas
+                data_inicio = self._formatar_data(data_inicio)
+                data_fim = self._formatar_data(data_fim)
 
-                    atendimentos_dia = [atendimento for atendimento in atendimentos if self._comparar_datas(atendimento.get("dtEntrada"), data_referencia_formatada)]
+                # Filtrar os atendimentos pelo convênio e intervalo de datas especificados
+                convenio = tracker.get_slot("convenio")
+                atendimentos_filtrados = [atendimento for atendimento in atendimentos if convenio in atendimento.get("dsConvenio").lower() and self._comparar_datas_intervalo(atendimento.get("dtEntrada"), data_inicio, data_fim)]
 
-                    if atendimentos_dia:
-                        dispatcher.utter_message(f"Atendimentos do dia {data_referencia_formatada}: {len(atendimentos_dia)}\n")
-                        for atendimento in atendimentos_dia:
-                            formatted_info = self._formatar_atendimento(atendimento)
-                            dispatcher.utter_message(formatted_info)
-                    else:
-                        dispatcher.utter_message(f"Atendimentos do dia {data_referencia_formatada} não encontrados.")
+                if atendimentos_filtrados:
+                    dispatcher.utter_message(f"Atendimentos do convênio '{convenio}' entre {data_inicio} e {data_fim}: {len(atendimentos_filtrados)}\n")
+                    for atendimento in atendimentos_filtrados:
+                        formatted_infos = self._formatar_atendimentos(atendimento)
+                        dispatcher.utter_message(formatted_infos)
+                else:
+                    dispatcher.utter_message(f"Atendimentos do convênio '{convenio}' entre {data_inicio} e {data_fim} não encontrados.")
+                return [ChatResponse(message=dispatcher.messages, action="action_get_atendimentos", entities={})]
+
+            # Usando expressão regular para encontrar o número do atendimento na mensagem
+            numero_atendimento = re.search(r'\b\d{5}\b', message_text)
+
+            if numero_atendimento:
+                numero_atendimento = int(numero_atendimento.group())
+                atendimento_encontrado = next((atendimento for atendimento in atendimentos if atendimento.get("nrAtendimento") == numero_atendimento), None)
+                if atendimento_encontrado:
+                    formatted_info = self._formatar_atendimento(atendimento_encontrado)
+                    dispatcher.utter_message(formatted_info)
+                else:
+                    dispatcher.utter_message(f"Atendimento de número {numero_atendimento} não encontrado.")
+                return [ChatResponse(message=dispatcher.messages, action="action_get_atendimentos", entities={})]
 
             else:
-                # Usando expressão regular para encontrar o número do atendimento na mensagem
-                message_text = tracker.latest_message.get('text').lower()
-                numero_atendimento = re.search(r'\b\d{5}\b', message_text)
-
-                if numero_atendimento:
-                    numero_atendimento = int(numero_atendimento.group())
-                    atendimento_encontrado = next((atendimento for atendimento in atendimentos if atendimento.get("nrAtendimento") == numero_atendimento), None)
-                    if atendimento_encontrado:
-                        formatted_info = self._formatar_atendimento(atendimento_encontrado)
-                        dispatcher.utter_message(formatted_info)
-                    else:
-                        dispatcher.utter_message(f"Atendimento de número {numero_atendimento} não encontrado.")
+                entities = tracker.latest_message.get('entities')
+                if entities:
+                    for entity in entities:
+                        if entity['entity'] == 'nmMedico':
+                            nome_medico = entity['value']
+                            atendimentos_medico = [atendimento for atendimento in atendimentos if atendimento.get("nmMedico") == nome_medico]
+                            if atendimentos_medico:
+                                numeros_atendimentos = len(atendimentos_medico)
+                                dispatcher.utter_message(f"Total de atendimentos do Dr. {nome_medico}: {numeros_atendimentos}")
+                                for atendimento in atendimentos_medico:
+                                    formatted_infos = self._formatar_atendimentos(atendimento)
+                                    dispatcher.utter_message(formatted_infos)
+                            else:
+                                dispatcher.utter_message(f"Atendimentos do Dr. {nome_medico} não encontrados.")
+                        elif entity['entity'] == 'data':
+                            pass
+                        elif entity['entity'] == 'nmPaciente':
+                            nome_paciente = entity['value']
+                            atendimentos_paciente = [atendimento for atendimento in atendimentos if atendimento.get("nmPaciente") == nome_paciente]
+                            if atendimentos_paciente:
+                                numeros_atendimentos = len(atendimentos_paciente)
+                                dispatcher.utter_message(f"Total de atendimentos do Paciente {nome_paciente}: {numeros_atendimentos}")
+                                for atendimento in atendimentos_paciente:
+                                    formatted_infos = self._formatar_atendimentos(atendimento)
+                                    dispatcher.utter_message(formatted_infos)
+                            else:
+                                dispatcher.utter_message(f"Atendimentos do Paciente {nome_paciente} não encontrados.")
+                        elif entity['entity'] == 'dsClinica':
+                            nome_clinica = entity['value']
+                            atendimentos_clinica = [atendimento for atendimento in atendimentos if atendimento.get("dsClinica") == nome_clinica]
+                            if atendimentos_clinica:
+                                numeros_atendimentos = len(atendimentos_clinica)
+                                dispatcher.utter_message(f"Total de atendimentos na Clínica {nome_clinica}: {numeros_atendimentos}")
+                                for atendimento in atendimentos_clinica:
+                                    formatted_info = self._formatar_atendimento(atendimento)
+                                    dispatcher.utter_message(formatted_info)
+                            else:
+                                dispatcher.utter_message(f"Atendimentos na Clínica {nome_clinica} não encontrados.")
+                        elif entity['entity'] == 'dsConvenio':
+                            convenio = entity['value']
+                            atendimentos_convenio = [atendimento for atendimento in atendimentos if atendimento.get("dsConvenio") == convenio]
+                            if atendimentos_convenio:
+                                numeros_atendimentos = len(atendimentos_convenio)
+                                dispatcher.utter_message(f"Total de atendimentos com o convênio {convenio}: {numeros_atendimentos}")
+                                for atendimento in atendimentos_convenio:
+                                    formatted_info = self._formatar_atendimento(atendimento)
+                                    dispatcher.utter_message(formatted_info)
+                            else:
+                                dispatcher.utter_message(f"Atendimentos com o convênio {convenio} não encontrados.")
+                        # Adicione aqui outras condições para outras entidades, se necessário
+                
+                elif 'quantos atendimentos' in message_text and 'esta semana' in message_text:
+                    atendimentos_semana = [atendimento for atendimento in atendimentos if self._esta_semana(atendimento.get("data_atendimento"))]
+                    numeros_atendimentos_semana = len(atendimentos_semana)
+                    dispatcher.utter_message(f"Tivemos {numeros_atendimentos_semana} atendimentos esta semana.")
+                elif 'quantos atendimentos' in message_text and 'último mês' in message_text:
+                    atendimentos_mes = [atendimento for atendimento in atendimentos if self._este_mes(atendimento.get("data_atendimento"))]
+                    numeros_atendimentos_mes = len(atendimentos_mes)
+                    dispatcher.utter_message(f"Tivemos {numeros_atendimentos_mes} atendimentos no último mês.")
+                elif 'quantos atendimentos' in message_text:
+                    total_atendimentos = len(atendimentos)
+                    dispatcher.utter_message(f"Total de atendimentos: {total_atendimentos}")
                 else:
-                    entities = tracker.latest_message.get('entities')
-                    if entities:
-                        for entity in entities:
-                            if entity['entity'] == 'nmMedico':
-                                nome_medico = entity['value']
-                                atendimentos_medico = [atendimento for atendimento in atendimentos if atendimento.get("nmMedico") == nome_medico]
-                                if atendimentos_medico:
-                                    numeros_atendimentos = len(atendimentos_medico)
-                                    dispatcher.utter_message(f"Total de atendimentos do Dr. {nome_medico}: {numeros_atendimentos}")
-                                    for atendimento in atendimentos_medico:
-                                        formatted_info = self._formatar_atendimento(atendimento)
-                                        dispatcher.utter_message(formatted_info)
-                                else:
-                                    dispatcher.utter_message(f"Atendimentos do Dr. {nome_medico} não encontrados.")
-                            elif entity['entity'] == 'data':
-                                # A busca por data já foi implementada acima
-                                pass
-                            elif entity['entity'] == 'nmPaciente':
-                                nome_paciente = entity['value']
-                                atendimentos_paciente = [atendimento for atendimento in atendimentos if atendimento.get("nmPaciente") == nome_paciente]
-                                if atendimentos_paciente:
-                                    numeros_atendimentos = len(atendimentos_paciente)
-                                    dispatcher.utter_message(f"Total de atendimentos do Paciente {nome_paciente}: {numeros_atendimentos}")
-                                    for atendimento in atendimentos_paciente:
-                                        formatted_info = self._formatar_atendimento(atendimento)
-                                        dispatcher.utter_message(formatted_info)
-                                else:
-                                    dispatcher.utter_message(f"Atendimentos do Paciente {nome_paciente} não encontrados.")
-                            elif entity['entity'] == 'dsClinica':
-                                nome_clinica = entity['value']
-                                atendimentos_clinica = [atendimento for atendimento in atendimentos if atendimento.get("dsClinica") == nome_clinica]
-                                if atendimentos_clinica:
-                                    numeros_atendimentos = len(atendimentos_clinica)
-                                    dispatcher.utter_message(f"Total de atendimentos na Clínica {nome_clinica}: {numeros_atendimentos}")
-                                    for atendimento in atendimentos_clinica:
-                                        formatted_info = self._formatar_atendimento(atendimento)
-                                        dispatcher.utter_message(formatted_info)
-                                else:
-                                    dispatcher.utter_message(f"Atendimentos na Clínica {nome_clinica} não encontrados.")
-                            elif entity['entity'] == 'dsConvenio':
-                                convenio = entity['value']
-                                atendimentos_convenio = [atendimento for atendimento in atendimentos if atendimento.get("dsConvenio") == convenio]
-                                if atendimentos_convenio:
-                                    numeros_atendimentos = len(atendimentos_convenio)
-                                    dispatcher.utter_message(f"Total de atendimentos com o convênio {convenio}: {numeros_atendimentos}")
-                                    for atendimento in atendimentos_convenio:
-                                        formatted_info = self._formatar_atendimento(atendimento)
-                                        dispatcher.utter_message(formatted_info)
-                                else:
-                                    dispatcher.utter_message(f"Atendimentos com o convênio {convenio} não encontrados.")
-                            # Adicione aqui outras condições para outras entidades, se necessário
-                    
-                    elif 'quantos atendimentos' in message_text and 'esta semana' in message_text:
-                        atendimentos_semana = [atendimento for atendimento in atendimentos if self._esta_semana(atendimento.get("data_atendimento"))]
-                        numeros_atendimentos_semana = len(atendimentos_semana)
-                        dispatcher.utter_message(f"Tivemos {numeros_atendimentos_semana} atendimentos esta semana.")
-                    elif 'quantos atendimentos' in message_text and 'último mês' in message_text:
-                        atendimentos_mes = [atendimento for atendimento in atendimentos if self._este_mes(atendimento.get("data_atendimento"))]
-                        numeros_atendimentos_mes = len(atendimentos_mes)
-                        dispatcher.utter_message(f"Tivemos {numeros_atendimentos_mes} atendimentos no último mês.")
-                    elif 'quantos atendimentos' in message_text:
-                        total_atendimentos = len(atendimentos)
-                        dispatcher.utter_message(f"Total de atendimentos: {total_atendimentos}")
-                    else:
-                        dispatcher.utter_message("Por favor, forneça o número do atendimento, o nome do médico, do paciente, da clínica ou o convênio.")
+                    dispatcher.utter_message("Por favor, forneça o número do atendimento, o nome do médico, do paciente, da clínica ou o convênio.")
         except requests.exceptions.RequestException as e:
             dispatcher.utter_message("Ocorreu um erro ao obter os dados da API.")
         except Exception as e:
@@ -178,10 +146,13 @@ class ActionGetAtendimentos(Action):
             f"Médico: {atendimento['nmMedico']}",
             f"Data de Entrada: {atendimento['dtEntrada']}",
             f"Convênio: {atendimento['dsConvenio']}",
-            f"Clínica: {atendimento['dsClinica']}",
-            " "  # Adicionando uma quebra de linha no final
-        ]) + '\n\n'
+            f"Clínica: {atendimento['dsClinica']}"            
+        ]) 
         return formatted_info
+    
+    def _formatar_atendimentos(self, atendimento: Dict[str, Any]) -> str:
+        formatted_infos = f"Nº do Atendimento: {atendimento['nrAtendimento']}"            
+        return formatted_infos
 
     def _formatar_data(self, data: str) -> str:
         for fmt in ('%d/%m/%Y', '%d-%m-%Y', '%Y/%m/%d', '%Y-%m-%d'):
