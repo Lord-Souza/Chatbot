@@ -3,10 +3,11 @@ nlu:
   - intent: informacoes_atendimento
     examples: |
       - Quais são as informações do atendimento de número [16801](nrAtendimento)?
-      - Me dê detalhes sobre o atendimento de hoje.
+      - Mostre os atendimentos de hoje.
       - O que você sabe sobre os atendimentos da [Unimed Belém](dsConvenio)?
       - Mostre os atendimentos do [CASF](dsConvenio)
       - Mostre os atendimentos do [Particular](dsConvenio)
+      - Quais os atendimentos do [](dsConvenio)
       - Mostre os atendimentos de hoje do convênio [CASSI](dsConvenio)
       - Quantos atendimentos da [](dsConvenio) tivemos hoje?
       - Quais os atendimentos do dia [22/01/24](dtEntrada)?
@@ -35,6 +36,10 @@ nlu:
     examples: |
       - Quais são os atendimentos do Dr. [Williams Fernandes Barra](nmMedico)?
       - Quais são os atendimentos do Dr. [williams](nmMedico)?
+      - Quais são os atendimentos do Dr. [Williams Fernandes Barra](nmMedico) no dia [01/02/2024](dtEntrada)
+      - Quais são os atendimentos do Dr. [Williams Fernandes Barra](nmMedico) nos dias [01/02/2024](dtEntrada) a [29/02/2024](dtEntrada)
+      - Mostre os atendimentos do Dr. [Sâmio Pimentel Ferreira](nmMedico) do dia [05/03/2024](dtEntrada)
+      - Mostre os atendimentos do Dr. [Sâmio Pimentel Ferreira](nmMedico) nos dias [05/03/2024](dtEntrada) a [07/03/2024](dtEntrada)
       - Quais são os atendimentos da Dra. [Silvana de Nazaré Pontes da Costa](nmMedico)?
       - Me mostre os atendimentos do Dr. [Sâmio Pimentel Ferreira](nmMedico).
       - Quantos atendimentos o Dr. [Ewaldo Luzio Foro de Oliveira](nmMedico) realizou?

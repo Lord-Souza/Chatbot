@@ -17,7 +17,7 @@ class ActionGetAtendimentos(Action):
     def name(self) -> Text:
         return "action_get_atendimentos"
 
-    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[ChatResponse]:
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
         try:
             api_url = "http://localhost:8080/bot/getAtendimentos"
             response = requests.get(api_url)
@@ -26,7 +26,7 @@ class ActionGetAtendimentos(Action):
 
             # Identificar o convênio na mensagem do usuário usando expressão regular
             message_text = tracker.latest_message.get('text')
-            convenio_match = re.search(r'Mostre os atendimentos do (.+)', message_text)
+            convenio_match = re.search(r'Mostre os atendimentos do Dr\. (\S+\s+\S+\s+\S+)', message_text)
 
             if convenio_match:
                 convenio = convenio_match.group(1).lower()
@@ -34,7 +34,7 @@ class ActionGetAtendimentos(Action):
                 return [SlotSet("convenio", convenio)]
 
             # Identificar datas na mensagem do usuário usando expressão regular
-            datas_encontradas = re.findall(r'\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b', message_text)
+            datas_encontradas = re.findall(r'\b\d{1,2}[/-]\d{1,2}[/-]\d{4}\b', message_text)  # Corrigido o padrão da expressão regular
 
             if datas_encontradas:
                 data_inicio, data_fim = datas_encontradas
@@ -50,9 +50,10 @@ class ActionGetAtendimentos(Action):
                     for atendimento in atendimentos_filtrados:
                         formatted_infos = self._formatar_atendimentos(atendimento)
                         dispatcher.utter_message(formatted_infos)
+                    return [SlotSet("convenio", convenio)]
                 else:
                     dispatcher.utter_message(f"Atendimentos do convênio '{convenio}' entre {data_inicio} e {data_fim} não encontrados.")
-                return [ChatResponse(message=dispatcher.messages, action="action_get_atendimentos", entities={})]
+                    return [SlotSet("convenio", convenio)]
 
             # Usando expressão regular para encontrar o número do atendimento na mensagem
             numero_atendimento = re.search(r'\b\d{5}\b', message_text)
@@ -65,23 +66,32 @@ class ActionGetAtendimentos(Action):
                     dispatcher.utter_message(formatted_info)
                 else:
                     dispatcher.utter_message(f"Atendimento de número {numero_atendimento} não encontrado.")
-                return [ChatResponse(message=dispatcher.messages, action="action_get_atendimentos", entities={})]
+                return []
 
             else:
                 entities = tracker.latest_message.get('entities')
                 if entities:
                     for entity in entities:
                         if entity['entity'] == 'nmMedico':
-                            nome_medico = entity['value']
-                            atendimentos_medico = [atendimento for atendimento in atendimentos if atendimento.get("nmMedico") == nome_medico]
+                            nome_medico = entity['value'].lower()  # Convertendo para minúsculas
+                            datas_encontradas = re.findall(r'\b\d{1,2}[/-]\d{1,2}[/-]\d{4}\b', message_text)  # Corrigido o padrão da expressão regular
+                            if datas_encontradas:
+                                data_inicio, data_fim = datas_encontradas
+                                data_inicio = self._formatar_data(data_inicio)
+                                data_fim = self._formatar_data(data_fim)
+                                atendimentos_medico = [atendimento for atendimento in atendimentos if atendimento.get("nmMedico").lower() == nome_medico and self._comparar_datas_intervalo(atendimento.get("dtEntrada"), data_inicio, data_fim)]
+                            else:
+                                atendimentos_medico = [atendimento for atendimento in atendimentos if atendimento.get("nmMedico").lower() == nome_medico]
                             if atendimentos_medico:
                                 numeros_atendimentos = len(atendimentos_medico)
                                 dispatcher.utter_message(f"Total de atendimentos do Dr. {nome_medico}: {numeros_atendimentos}")
                                 for atendimento in atendimentos_medico:
                                     formatted_infos = self._formatar_atendimentos(atendimento)
                                     dispatcher.utter_message(formatted_infos)
+                                return []
                             else:
                                 dispatcher.utter_message(f"Atendimentos do Dr. {nome_medico} não encontrados.")
+                                return []
                         elif entity['entity'] == 'data':
                             pass
                         elif entity['entity'] == 'nmPaciente':
@@ -93,8 +103,10 @@ class ActionGetAtendimentos(Action):
                                 for atendimento in atendimentos_paciente:
                                     formatted_infos = self._formatar_atendimentos(atendimento)
                                     dispatcher.utter_message(formatted_infos)
+                                return []
                             else:
                                 dispatcher.utter_message(f"Atendimentos do Paciente {nome_paciente} não encontrados.")
+                                return []
                         elif entity['entity'] == 'dsClinica':
                             nome_clinica = entity['value']
                             atendimentos_clinica = [atendimento for atendimento in atendimentos if atendimento.get("dsClinica") == nome_clinica]
@@ -102,10 +114,12 @@ class ActionGetAtendimentos(Action):
                                 numeros_atendimentos = len(atendimentos_clinica)
                                 dispatcher.utter_message(f"Total de atendimentos na Clínica {nome_clinica}: {numeros_atendimentos}")
                                 for atendimento in atendimentos_clinica:
-                                    formatted_info = self._formatar_atendimento(atendimento)
-                                    dispatcher.utter_message(formatted_info)
+                                    formatted_infos = self._formatar_atendimentos(atendimento)
+                                    dispatcher.utter_message(formatted_infos)
+                                return []
                             else:
                                 dispatcher.utter_message(f"Atendimentos na Clínica {nome_clinica} não encontrados.")
+                                return []
                         elif entity['entity'] == 'dsConvenio':
                             convenio = entity['value']
                             atendimentos_convenio = [atendimento for atendimento in atendimentos if atendimento.get("dsConvenio") == convenio]
@@ -113,31 +127,37 @@ class ActionGetAtendimentos(Action):
                                 numeros_atendimentos = len(atendimentos_convenio)
                                 dispatcher.utter_message(f"Total de atendimentos com o convênio {convenio}: {numeros_atendimentos}")
                                 for atendimento in atendimentos_convenio:
-                                    formatted_info = self._formatar_atendimento(atendimento)
-                                    dispatcher.utter_message(formatted_info)
+                                    formatted_infos = self._formatar_atendimentos(atendimento)
+                                    dispatcher.utter_message(formatted_infos)
+                                return []
                             else:
                                 dispatcher.utter_message(f"Atendimentos com o convênio {convenio} não encontrados.")
+                                return []
                         # Adicione aqui outras condições para outras entidades, se necessário
                 
                 elif 'quantos atendimentos' in message_text and 'esta semana' in message_text:
                     atendimentos_semana = [atendimento for atendimento in atendimentos if self._esta_semana(atendimento.get("data_atendimento"))]
                     numeros_atendimentos_semana = len(atendimentos_semana)
                     dispatcher.utter_message(f"Tivemos {numeros_atendimentos_semana} atendimentos esta semana.")
+                    return []
                 elif 'quantos atendimentos' in message_text and 'último mês' in message_text:
                     atendimentos_mes = [atendimento for atendimento in atendimentos if self._este_mes(atendimento.get("data_atendimento"))]
                     numeros_atendimentos_mes = len(atendimentos_mes)
                     dispatcher.utter_message(f"Tivemos {numeros_atendimentos_mes} atendimentos no último mês.")
+                    return []
                 elif 'quantos atendimentos' in message_text:
                     total_atendimentos = len(atendimentos)
                     dispatcher.utter_message(f"Total de atendimentos: {total_atendimentos}")
+                    return []
                 else:
                     dispatcher.utter_message("Por favor, forneça o número do atendimento, o nome do médico, do paciente, da clínica ou o convênio.")
+                    return []
         except requests.exceptions.RequestException as e:
             dispatcher.utter_message("Ocorreu um erro ao obter os dados da API.")
         except Exception as e:
             dispatcher.utter_message("Ocorreu um erro ao processar a solicitação.")
 
-        return [ChatResponse(message=dispatcher.messages, action="action_get_atendimentos", entities={})]
+        return []
 
     def _formatar_atendimento(self, atendimento: Dict[str, Any]) -> str:
         formatted_info = "\n".join([
