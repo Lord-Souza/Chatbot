@@ -6,6 +6,10 @@ import requests
 from rasa_sdk import Action, Tracker
 from rasa_sdk.events import SlotSet
 from rasa_sdk.executor import CollectingDispatcher
+from flask import Flask
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
 
 @dataclass
 class ChatResponse:
@@ -207,3 +211,14 @@ class ActionGetAtendimentos(Action):
         inicio_mes = hoje.replace(day=1)
         ultimo_dia_mes = hoje.replace(day=1, month=hoje.month % 12 + 1) - datetime.timedelta(days=1)
         return inicio_mes.date() <= data_atendimento <= ultimo_dia_mes.date()
+
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    data = request.json
+    # Aqui você pode processar os dados recebidos do Rasa
+    # e retornar a resposta adequada
+    return jsonify({"status": "success"})
+
+# 4. Inicie o servidor Flask
+if __name__ == "__main__":
+    app.run(debug=True)
